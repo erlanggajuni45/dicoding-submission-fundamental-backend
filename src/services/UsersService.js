@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const InvariantError = require('../exceptions/InvariantError');
 const AuthenticationError = require('../exceptions/AuthenticationError');
+const NotFoundError = require('../exceptions/NotFoundError');
 
 class UsersService {
   constructor() {
@@ -37,9 +38,7 @@ class UsersService {
     const { rows } = await this._pool.query(query);
 
     if (rows.length > 0) {
-      throw new InvariantError(
-        'Gagal menambahkan user. Username sudah digunakan',
-      );
+      throw new InvariantError('Gagal menambahkan user. Username sudah digunakan');
     }
   }
 
@@ -63,6 +62,18 @@ class UsersService {
     }
 
     return id;
+  }
+
+  async verifyUserExist(userId) {
+    const query = {
+      text: 'SELECT * FROM users WHERE id = $1',
+      values: [userId],
+    };
+
+    const { rows } = await this._pool.query(query);
+    if (!rows.length) {
+      throw new NotFoundError('User tidak ditemukan');
+    }
   }
 }
 
