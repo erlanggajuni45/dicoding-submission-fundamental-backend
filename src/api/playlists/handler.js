@@ -34,9 +34,21 @@ class PlaylistsHandler {
       },
     };
   }
+
+  async deletePlaylistHandler(request) {
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._playlistsService.verifyPlaylistAccess(id, credentialId);
+    await this._playlistsService.deletePlaylist(id);
+
+    return {
+      status: 'success',
+      message: 'Playlist berhasil dihapus.',
+    };
+  }
 }
 
-// deletePlaylistHandler(request, h)
 // postPlaylistSongHandler(request, h)
 // getPlaylistSongHandler(request, h)
 // deletePlaylistSongHandler(request, h)
