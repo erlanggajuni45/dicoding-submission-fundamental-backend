@@ -70,6 +70,39 @@ class PlaylistsService {
     }
   }
 
+  async getPlaylistSong(playlistId) {
+    const queryPlaylist = {
+      text: `
+        SELECT a.id, a.name, b.username
+        FROM playlists a 
+        INNER JOIN users b
+        ON a.owner = b.id
+        WHERE a.id = $1
+        `,
+      values: [playlistId],
+    };
+
+    const { rows } = await this._pool.query(queryPlaylist);
+    if (!rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const querySong = {
+      text: `
+      SELECT a.id, a.title, a.performer
+      FROM songs a
+      INNER JOIN playlist_songs b
+      ON a.id = b.song_id
+      WHERE b.playlist_id = $1
+      `,
+      values: [playlistId],
+    };
+
+    const songs = await this._pool.query(querySong);
+
+    return { ...rows[0], songs: songs.rows };
+  }
+
   async verifyPlaylistOwner(id, owner) {
     const query = {
       text: 'SELECT * FROM playlists WHERE id = $1',
