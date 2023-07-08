@@ -21,13 +21,24 @@ class PlaylistsHandler {
     response.code(201);
     return response;
   }
+
+  async getPlaylistHandler(request) {
+    const { id: credentialId } = request.auth.credentials;
+
+    const playlists = await this._playlistsService.getPlaylist({ owner: credentialId });
+
+    return {
+      status: 'success',
+      data: {
+        playlists,
+      },
+    };
+  }
 }
 
-// postPlaylistHandler(request, h),
-// getPlaylistHandler(request, h),
-// deletePlaylistHandler(request, h),
-// postPlaylistSongHandler(request, h),
-// getPlaylistSongHandler(request, h),
-// deletePlaylistSongHandler(request, h),
+// deletePlaylistHandler(request, h)
+// postPlaylistSongHandler(request, h)
+// getPlaylistSongHandler(request, h)
+// deletePlaylistSongHandler(request, h)
 
 module.exports = PlaylistsHandler;
