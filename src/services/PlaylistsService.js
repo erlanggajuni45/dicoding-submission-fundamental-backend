@@ -140,6 +140,38 @@ class PlaylistsService {
       }
     }
   }
+
+  async getPlaylistActivities(playlistId) {
+    const query = {
+      text: `
+        SELECT a.username, b.title, c.action, c.time
+        FROM playlist_activities c
+        INNER JOIN users a ON c.user_id = a.id
+        INNER JOIN songs b ON c.song_id = b.id
+        WHERE c.playlist_id = $1
+        ORDER BY c.time`,
+      values: [playlistId],
+    };
+    const { rows } = await this._pool.query(query);
+    return rows;
+  }
+
+  async addPlaylistActivities({
+    playlistId, songId, userId, action,
+  }) {
+    const id = `activity-${nanoid(16)}`;
+    const date = new Date();
+
+    const query = {
+      text: 'INSERT INTO playlist_activities VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      values: [id, playlistId, songId, userId, action, date],
+    };
+
+    const { rows } = await this._pool.query(query);
+    if (!rows.length) {
+      throw new InvariantError('Gagal menambahkan aktifitas playlist');
+    }
+  }
 }
 
 module.exports = PlaylistsService;

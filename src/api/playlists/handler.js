@@ -1,3 +1,5 @@
+const AuthenticationError = require('../../exceptions/AuthenticationError');
+
 class PlaylistsHandler {
   constructor(playlistsService, songsService, validator) {
     this._playlistsService = playlistsService;
@@ -59,6 +61,12 @@ class PlaylistsHandler {
     await this._songsService.getSongById(songId);
     await this._playlistsService.addPlaylistSong(playlistId, songId);
 
+    await this._playlistsService.addPlaylistActivities({
+      playlistId,
+      songId,
+      userId: credentialId,
+      action: 'add',
+    });
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil ditambahkan ke playlist',
@@ -91,10 +99,37 @@ class PlaylistsHandler {
 
     await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
     await this._playlistsService.deletePlaylistSong(playlistId, songId);
+    await this._playlistsService.addPlaylistActivities({
+      playlistId,
+      songId,
+      userId: credentialId,
+      action: 'delete',
+    });
 
     return {
       status: 'success',
       message: 'Lagu berhasil dihapus dari playlist',
+    };
+  }
+
+  async getPlaylistActivities(request) {
+    if (!request.auth.credentials) {
+      throw new AuthenticationError('Kredensial tidak valid');
+    }
+
+    const { id: playlistId } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+    await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+
+    const activities = await this._playlistsService.getPlaylistActivities(playlistId);
+    return {
+      status: 'success',
+      data: {
+        playlistId,
+        activities,
+      },
     };
   }
 }
