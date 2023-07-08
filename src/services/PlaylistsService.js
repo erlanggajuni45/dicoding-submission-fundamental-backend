@@ -57,6 +57,19 @@ class PlaylistsService {
     }
   }
 
+  async addPlaylistSong(playlistId, songId) {
+    const id = `playlistsong-${nanoid(16)}`;
+    const query = {
+      text: 'INSERT INTO playlist_songs VALUES($1, $2, $3) RETURNING id',
+      values: [id, playlistId, songId],
+    };
+
+    const { rows } = await this._pool.query(query);
+    if (!rows[0].id) {
+      throw new InvariantError('Lagu gagal ditambahkan ke playlist');
+    }
+  }
+
   async verifyPlaylistOwner(id, owner) {
     const query = {
       text: 'SELECT * FROM playlists WHERE id = $1',

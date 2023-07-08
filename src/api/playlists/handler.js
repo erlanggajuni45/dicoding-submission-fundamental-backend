@@ -47,9 +47,27 @@ class PlaylistsHandler {
       message: 'Playlist berhasil dihapus.',
     };
   }
+
+  async postPlaylistSongHandler(request, h) {
+    await this._validator.validatePlaylistSongPayload(request.payload);
+
+    const { id: playlistId } = request.params;
+    const { songId } = request.payload;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
+    await this._songsService.getSongById(songId);
+    await this._playlistsService.addPlaylistSong(playlistId, songId);
+
+    const response = h.response({
+      status: 'success',
+      message: 'Lagu berhasil ditambahkan ke playlist',
+    });
+    response.code(201);
+    return response;
+  }
 }
 
-// postPlaylistSongHandler(request, h)
 // getPlaylistSongHandler(request, h)
 // deletePlaylistSongHandler(request, h)
 
