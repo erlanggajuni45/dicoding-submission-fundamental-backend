@@ -37,8 +37,8 @@ const CollaborationsValidator = require('./validator/collaborations');
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
-  const albumsService = new AlbumsService();
   const songsService = new SongsService();
+  const albumsService = new AlbumsService(songsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationService();
   const collaborationsService = new CollaborationsService(usersService);
