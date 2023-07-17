@@ -156,9 +156,7 @@ class PlaylistsService {
     return rows;
   }
 
-  async addPlaylistActivities({
-    playlistId, songId, userId, action,
-  }) {
+  async addPlaylistActivities({ playlistId, songId, userId, action }) {
     const id = `activity-${nanoid(16)}`;
     const date = new Date();
 
